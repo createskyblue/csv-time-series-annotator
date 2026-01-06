@@ -306,6 +306,7 @@ const App: React.FC = () => {
       <footer className="bg-slate-800 text-white py-3 text-center text-sm border-t border-slate-700">
         <div className="container mx-auto px-4">
           <p>createskyblue@outlook.com CSV时间序列标注工具© 2026</p>
+          <a href="https://github.com/createskyblue/csv-time-series-annotator">Github</a>
         </div>
       </footer>
     </div>
