@@ -1,0 +1,5 @@
+{
+  "name": "AI Spike Data Annotation Tool",
+  "description": "A high-performance data labeling tool for time-series data (AI spikes) using React, Tailwind CSS, and uPlot. Supports CSV batch processing, keyboard shortcuts, and project state persistence.",
+  "requestFramePermissions": []
+}
