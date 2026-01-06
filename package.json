@@ -1,6 +1,5 @@
 {
   "name": "csv-time-series-annotator",
-  "homepage": "https://createskyblue.github.io/csv-time-series-annotator",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist -r https://github.com/createskyblue/csv-time-series-annotator -b gh-pages"
   },
   "dependencies": {
     "papaparse": "^5.5.3",
