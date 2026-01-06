@@ -30,7 +30,7 @@ This tool is mainly aimed at data scientists, machine learning engineers, and re
 
 ## Demo
 
-![Application Demo](./img/PixPin_2026-01-06_23-07-55.png)
+![Application Demo](./img/PixPin_2026-01-07_06-02-31.png)
 
 ## Technical Architecture
 
