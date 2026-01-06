@@ -54,21 +54,26 @@ const App: React.FC = () => {
 
     setFileName(file.name);
     Papa.parse(file, {
-      header: true,
+      header: false,
       dynamicTyping: true,
       complete: (results) => {
         const parsedSamples: Sample[] = results.data
-          .filter((row: any) => Object.values(row).some(v => v !== null))
+          .filter((row: any) => row.some(v => v !== null && v !== undefined && v !== ''))
           .map((row: any, idx) => {
-            const numericData = Object.values(row)
+            const numericData = row
               .map(v => Number(v))
               .filter(v => !isNaN(v));
+            
+            const originalRow = {};
+            row.forEach((value: any, index: number) => {
+              (originalRow as any)[`field${index}`] = value;
+            });
             
             return {
               id: idx,
               data: numericData,
               label: null,
-              originalRow: row
+              originalRow
             };
           });
         setSamples(parsedSamples);
