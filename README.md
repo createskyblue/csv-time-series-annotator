@@ -1,3 +1,6 @@
+<!-- You can translate this document into English and create a README.en.md file, then add links here -->
+<a href="./README.en.md">English Version</a> | <a href="./README.md">中文版</a>
+
 # NanoEdgeAI CSV时间序列标注工具
 
 ## 项目简介
