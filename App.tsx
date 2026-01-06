@@ -153,7 +153,7 @@ const App: React.FC = () => {
     if (!files || files.length === 0) return;
 
     const allNewSamples: Sample[] = [];
-    const fileArr = Array.from(files);
+    const fileArr = Array.from(files) as File[];
     
     for (const file of fileArr) {
       const text = await file.text();
@@ -177,7 +177,7 @@ const App: React.FC = () => {
             label: null,
             originalRow: row,
             sourceFileName: file.name
-          };
+          } as Sample;
         })
         .filter((s): s is Sample => s !== null && s.data.length > 1);
 
@@ -213,7 +213,14 @@ const App: React.FC = () => {
   };
 
   const exportProject = () => {
-    const project: ProjectData = { version: '1.2', projectTitle, samples, labels, currentIndex, timeScaleCoefficient };
+    const project: ProjectData = { 
+      version: '1.2', 
+      projectTitle: projectTitle, 
+      samples: samples, 
+      labels: labels, 
+      currentIndex: currentIndex, 
+      timeScaleCoefficient: timeScaleCoefficient 
+    };
     const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -228,10 +235,10 @@ const App: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const project: ProjectData = JSON.parse(event.target?.result as string);
-        setSamples(project.samples);
-        setLabels(project.labels);
-        setLabelTextarea(project.labels.join('\n'));
+        const project = JSON.parse(event.target?.result as string) as ProjectData;
+        setSamples(project.samples || []);
+        setLabels(project.labels || []);
+        setLabelTextarea((project.labels || []).join('\n'));
         setCurrentIndex(project.currentIndex || 0);
         setProjectTitle(project.projectTitle || '导入的项目');
         setTimeScaleCoefficient(project.timeScaleCoefficient ?? 1.0);
