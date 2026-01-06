@@ -18,6 +18,7 @@ This tool is mainly aimed at data scientists, machine learning engineers, and re
 - **File Management System**: New file tree system that allows adding and deleting files in the annotation project
 - **Flexible Data Import and Parsing**: Supports importing data in CSV format, using Papa Parse for efficient parsing, with each CSV row treated as an independent time series sample
 - **Time Axis Coefficient Setting**: Allows users to set a time axis unit coefficient to adjust the X-axis display scale
+- **Data Dimension Setting**: Supports setting the number of data dimensions, parsing data in an interleaved manner (D1_S1, D2_S1... sequence) for multi-dimensional time series data processing
 - **Time Series Visualization**: Implements data visualization based on the lightweight chart library uPlot
 - **Quick Label Selection**: Supports number keys 1-9 for rapid selection of the first 9 label buttons
 - **Label Management**: Flexible label configuration system supporting custom labels
@@ -30,7 +31,7 @@ This tool is mainly aimed at data scientists, machine learning engineers, and re
 
 ## Demo
 
-![Application Demo](./img/PixPin_2026-01-07_06-02-31.png)
+![Application Demo](./img/PixPin_2026-01-07_06-26-10.png)
 
 ## Technical Architecture
 
@@ -65,6 +66,12 @@ Ensure your system has Node.js installed (version compatible with npm)
 ### Data Import
 - Click the "Upload CSV Data Source" button in the sidebar and select a CSV file
 - Each row in the CSV will be treated as an independent time series sample
+
+### Data Dimension Setting
+- In the "Global Configuration" area, you can set the value of "Data Dimension (D)"
+- This feature is used to process multi-dimensional time series data, parsing data in an interleaved manner (D1_S1, D2_S1... sequence)
+- After setting, the chart will display multiple data sequence lines, with each line representing data from one dimension
+- The dimension value will be displayed as a "{dimension count}D Mode" label in the top right corner
 
 ### Label Configuration
 - Edit labels in the "Label Configuration" area, one label per line
@@ -102,4 +109,3 @@ npm run build
 ├── img/              # Image assets
 └── README.md
 ```
-

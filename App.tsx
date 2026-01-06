@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Papa from 'papaparse';
 import UPlotChart from './uplot-wrapper';
@@ -8,17 +7,24 @@ const App: React.FC = () => {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [labels, setLabels] = useState<string[]>(['正常', '异常', '噪声']);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [projectTitle, setProjectTitle] = useState('CSV时间序列标注工程');
+  const [projectTitle, setProjectTitle] = useState('未命名工程');
   const [labelTextarea, setLabelTextarea] = useState('正常\n异常\n噪声');
   const [isKeyboardEnabled, setIsKeyboardEnabled] = useState(true);
   const [jumpInputValue, setJumpInputValue] = useState('1');
   const [activeHotkey, setActiveHotkey] = useState<string | null>(null);
   const [timeScaleCoefficient, setTimeScaleCoefficient] = useState(1.0);
+  const [timeScaleInput, setTimeScaleInput] = useState('1.0');
+  const [dimensionsCount, setDimensionsCount] = useState(1);
 
   // Sync jump input when index changes
   useEffect(() => {
     setJumpInputValue((currentIndex + 1).toString());
   }, [currentIndex]);
+
+  // Sync timeScaleInput when numeric value changes (e.g. from import)
+  useEffect(() => {
+    setTimeScaleInput(timeScaleCoefficient.toString());
+  }, [timeScaleCoefficient]);
 
   // Computed: Group samples by file for the file tree
   const fileList = useMemo(() => {
@@ -179,7 +185,7 @@ const App: React.FC = () => {
             sourceFileName: file.name
           } as Sample;
         })
-        .filter((s): s is Sample => s !== null && s.data.length > 1);
+        .filter((s): s is Sample => s !== null && s.data.length > 0);
 
       allNewSamples.push(...parsed);
     }
@@ -214,12 +220,13 @@ const App: React.FC = () => {
 
   const exportProject = () => {
     const project: ProjectData = { 
-      version: '1.2', 
+      version: '1.3', 
       projectTitle: projectTitle, 
       samples: samples, 
       labels: labels, 
       currentIndex: currentIndex, 
-      timeScaleCoefficient: timeScaleCoefficient 
+      timeScaleCoefficient: timeScaleCoefficient,
+      dimensionsCount: dimensionsCount
     };
     const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -242,20 +249,53 @@ const App: React.FC = () => {
         setCurrentIndex(project.currentIndex || 0);
         setProjectTitle(project.projectTitle || '导入的项目');
         setTimeScaleCoefficient(project.timeScaleCoefficient ?? 1.0);
+        setDimensionsCount(project.dimensionsCount ?? 1);
       } catch (err) { alert("项目导入失败。"); }
       e.target.value = '';
     };
     reader.readAsText(file);
   };
 
+  const handleTimeScaleBlur = () => {
+    const val = parseFloat(timeScaleInput);
+    if (!isNaN(val) && val > 0) {
+      setTimeScaleCoefficient(val);
+    } else {
+      // Revert to current validated state string
+      setTimeScaleInput(timeScaleCoefficient.toString());
+    }
+  };
+
   const currentSample = samples[currentIndex];
   
-  // Calculate X-axis values by multiplying indices with the timeScaleCoefficient
-  const uPlotData: [number[], number[]] = useMemo(() => {
-    if (!currentSample) return [[], []];
-    const xAxis = Array.from({ length: currentSample.data.length }, (_, i) => i * timeScaleCoefficient);
-    return [xAxis, currentSample.data];
-  }, [currentSample, timeScaleCoefficient]);
+  // Reshape data for uPlot based on dimensionsCount
+  const uPlotData = useMemo(() => {
+    if (!currentSample || !currentSample.data.length) return [[], []];
+    
+    const dCount = Math.max(1, dimensionsCount);
+    const sampleLen = currentSample.data.length;
+    const seqLen = Math.ceil(sampleLen / dCount);
+    
+    // X axis
+    const xAxis = Array.from({ length: seqLen }, (_, i) => i * timeScaleCoefficient);
+    const alignedData: any[] = [xAxis];
+
+    // Y axes for each dimension
+    for (let d = 0; d < dCount; d++) {
+      const dimensionSeries: (number | null)[] = [];
+      for (let i = 0; i < seqLen; i++) {
+        const dataIdx = i * dCount + d;
+        if (dataIdx < sampleLen) {
+          dimensionSeries.push(currentSample.data[dataIdx]);
+        } else {
+          dimensionSeries.push(null);
+        }
+      }
+      alignedData.push(dimensionSeries);
+    }
+    
+    return alignedData;
+  }, [currentSample, timeScaleCoefficient, dimensionsCount]);
 
   const totalLabeled = samples.filter(s => s.label !== null).length;
   const progressPercent = samples.length > 0 ? (totalLabeled / samples.length) * 100 : 0;
@@ -268,7 +308,7 @@ const App: React.FC = () => {
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
-            <h1 className="text-sm font-black tracking-tight uppercase opacity-50 hidden sm:block">CSV时间序列标注工具</h1>
+            <h1 className="text-sm font-black tracking-tight uppercase opacity-50 hidden sm:block">CSV时间序列标注工程</h1>
           </div>
 
           <div className="h-6 w-[1px] bg-slate-700 mx-2"></div>
@@ -323,14 +363,33 @@ const App: React.FC = () => {
 
           <div className="p-5 border-b border-slate-100 bg-slate-50/30">
             <h2 className="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">全局配置</h2>
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-slate-500">时间轴单位系数 (X轴)</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">数据维度 (D)</span>
+                  <span className="text-[10px] font-mono text-blue-500 font-bold bg-blue-50 px-1 rounded">{dimensionsCount}</span>
+                </div>
                 <input 
                   type="number" 
-                  step="0.001"
-                  value={timeScaleCoefficient}
-                  onChange={(e) => setTimeScaleCoefficient(parseFloat(e.target.value) || 1.0)}
+                  min="1"
+                  max="20"
+                  step="1"
+                  value={dimensionsCount}
+                  onChange={(e) => setDimensionsCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all font-mono"
+                  placeholder="交错维度数量..."
+                />
+                <p className="text-[9px] text-slate-400 leading-tight">按 D1_S1, D2_S1... 序列解析数据</p>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">时间轴单位系数 (X轴)</span>
+                <input 
+                  type="text" 
+                  value={timeScaleInput}
+                  onChange={(e) => setTimeScaleInput(e.target.value)}
+                  onBlur={handleTimeScaleBlur}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
                   className="w-full p-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 transition-all font-mono"
                   placeholder="如: 0.1, 0.005..."
                 />
@@ -405,11 +464,16 @@ const App: React.FC = () => {
                 <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-full uppercase tracking-tighter shadow-lg">
                   {currentSample?.sourceFileName || 'IDLE'}
                 </span>
+                {dimensionsCount > 1 && (
+                   <span className="px-3 py-1 bg-blue-500 text-white text-[10px] font-black rounded-full uppercase tracking-tighter shadow-lg">
+                    {dimensionsCount} 维模式
+                  </span>
+                )}
              </div>
 
             {samples.length > 0 ? (
               <div className="flex-1 flex items-center justify-center pt-8">
-                <UPlotChart key={currentSample?.id + '-' + timeScaleCoefficient} data={uPlotData} width={window.innerWidth - 450} height={380} />
+                <UPlotChart key={`${currentSample?.id}-${timeScaleCoefficient}-${dimensionsCount}`} data={uPlotData} width={window.innerWidth - 450} height={380} />
               </div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
@@ -492,7 +556,7 @@ const App: React.FC = () => {
       
       <footer className="bg-slate-900 text-slate-600 py-3 text-[9px] font-bold uppercase tracking-widest border-t border-slate-800 px-6 flex justify-between items-center">
         <div className="flex gap-4">
-          <p>CSV时间序列标注工具 © 2026</p>
+          <p>CSV时间序列标注工程 © 2026</p>
           <a 
             href="https://github.com/createskyblue/csv-time-series-annotator" 
             target="_blank" 
@@ -501,6 +565,15 @@ const App: React.FC = () => {
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
             GITHUB SOURCE
+          </a>
+          <a 
+            href="https://wiki.st.com/stm32mcu/wiki/AI:NanoEdge_AI_Studio#Basic_format" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-1"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            数据格式参考
           </a>
         </div>
         <p>createskyblue@outlook.com</p>
