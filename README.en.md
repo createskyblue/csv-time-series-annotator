@@ -13,10 +13,19 @@ This tool is mainly aimed at data scientists, machine learning engineers, and re
 
 ## Main Features
 
-- **Data Import and Parsing**: Supports importing data in formats such as CSV, using Papa Parse for efficient parsing
+- **Multi-file Annotation**: Supports uploading multiple CSV files for annotation, allowing management of multiple data files within a single project
+- **File Navigation**: Supports switching between different files using W/S keys, regardless of whether samples are annotated
+- **File Management System**: New file tree system that allows adding and deleting files in the annotation project
+- **Flexible Data Import and Parsing**: Supports importing data in CSV format, using Papa Parse for efficient parsing, with each CSV row treated as an independent time series sample
+- **Time Axis Coefficient Setting**: Allows users to set a time axis unit coefficient to adjust the X-axis display scale
 - **Time Series Visualization**: Implements data visualization based on the lightweight chart library uPlot
+- **Quick Label Selection**: Supports number keys 1-9 for rapid selection of the first 9 label buttons
 - **Label Management**: Flexible label configuration system supporting custom labels
-- **Data Export**: One-click export of annotation results to categorized CSV files
+- **Jump Functionality**: Provides a text box in the sample navigation area, allowing users to manually enter a number to quickly jump to a specified sample
+- **Project Naming**: Allows users to name projects for easier management
+- **Button Press Feedback**: Annotation buttons provide visual feedback when mouse is pressed or keyboard shortcut is held down
+- **Data Export**: One-click export of annotation results to categorized CSV files, exported separately by original file names
+- **Fix CSV Export Issues**: Fixes the issue of automatically creating new header rows when exporting CSV
 - **Project Backup and Recovery**: Supports import/export functionality for project states
 
 ## Demo
