@@ -1,5 +1,8 @@
 <a href="./README.md">中文版</a> | <a href="./README.en.md">English Version</a>
 
+# Online Usage
+You can use this tool directly at [https://createskyblue.github.io/csv-time-series-annotator/](https://createskyblue.github.io/csv-time-series-annotator/) without installing any dependencies.
+
 # NanoEdgeAI CSV Time Series Annotation Tool
 
 ## Project Introduction

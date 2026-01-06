@@ -1,6 +1,9 @@
 <!-- You can translate this document into English and create a README.en.md file, then add links here -->
 <a href="./README.en.md">English Version</a> | <a href="./README.md">中文版</a>
 
+# 在线使用
+你可以在 [https://createskyblue.github.io/csv-time-series-annotator/](https://createskyblue.github.io/csv-time-series-annotator/) 直接使用此工具，无需安装任何依赖。
+
 # NanoEdgeAI CSV时间序列标注工具
 
 ## 项目简介
@@ -91,4 +94,3 @@ npm run build
 ├── lib/              # 第三方库
 ├── img/              # 图片资源
 └── README.md
-```
