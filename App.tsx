@@ -301,6 +301,13 @@ const App: React.FC = () => {
           )}
         </section>
       </main>
+      
+      {/* 版权信息 */}
+      <footer className="bg-slate-800 text-white py-3 text-center text-sm border-t border-slate-700">
+        <div className="container mx-auto px-4">
+          <p>createskyblue@outlook.com CSV时间序列标注工具© 2026</p>
+        </div>
+      </footer>
     </div>
   );
 };
